@@ -12,7 +12,7 @@ LEARNING_RATE=5e-4
 # The number of target FIDs is 13. They are: Water, tNAA, Cr, Cr_CH2, Cho, mI, Glu, Gln, GSH, GABA, Asp, Tau, and Lac. The target concetration of Cr_CH2 is dropped
 # due to the influence of water suppression RF pulses, so the number of concentration targets is 12.
 #
-# Default distribution strategy in Tensorflow (works on single GPU, for example, A100 or A6000) is:
+# Default distribution strategy in Tensorflow (works on single GPU, for example, Nvidia A100 or A6000) is:
 #    strategy = tf.distribute.get_strategy()
 # if TPU, use the following code to creat a distributed strategy on a tpu:
 #    tf.config.experimental_connect_to_cluster(tpu)
@@ -20,10 +20,10 @@ LEARNING_RATE=5e-4
 #    strategy = tf.distribute.experimental.TPUStrategy(tpu)
 #
 # For training the input is a tuple ({'input FID':total_signal}, target). The target here is a dictionary {'concentration':concentrations, 'target_individual_signal':
-# individual_signals, 'target_tatal_signal': total_signal}. Different from that in input FID, the target total signal is free of noise and extranious peaks to compute
-# losses. All the item values in the dictionaries are tf.float32 tensors and have the unbatched formats: (32, 2048, 2), (NUM_TARGET_CONCS),
+# individual_signals, 'target_tatal_signal': total_signal}. Different from that in input FID, the target total signal is free of noise and extranious peaks which is
+# used to compute total FID loss. All the item values in the dictionaries are tf.float32 tensors and have the unbatched formats: (32, 2048, 2), (NUM_TARGET_CONCS),
 # (32, 2048, NUM_TARGET_FIDS*2), (32, 2048, 2), respectively. For inference the input is {'input FID':total_signal}. The keys in the target dictionary need to match 
-# the output names in the model. Using tf Dataloader to batch and load input data so that the final input FID has the format (BATCH_SIZE, 32, 2048, 2).
+# the output names in the model. Use tf Dataloader to batch and load input data. The final input FID has the format (BATCH_SIZE, 32, 2048, 2).
 
 
 print("REPLICAS: ", strategy.num_replicas_in_sync)
