@@ -53,7 +53,7 @@ def wavenet(x, filters, dilations, kernel_size=5):
     return res_x
 
 def deepJPRESS(dims, echoes=32, points=2048, dilation_depth=8,
-               num_concentrations=NUM_TARGET_CONCS, num_FIDs=NUM_TARGET_FIDS):
+               num_concentrations=NUM_TARGET_CONCS, num_fids=NUM_TARGET_FIDS):
   
           input = L.Input(shape=(echoes, points, 2), name='input FID')
           x = tf.reshape(input, (-1,points,2))
@@ -105,7 +105,7 @@ def deepJPRESS(dims, echoes=32, points=2048, dilation_depth=8,
 
           #outputs of concentration, phase, and frequency
           feature = L.GlobalAveragePooling1D()(x)     
-          concentration = L.Dense(num_concentrations, name='concentration')(feature)  
+          concentration = L.Dense(num_concentrations, name='concentrations')(feature)  
           phase = L.Dense(2, name='phase')(feature)
           frequency = L.Dense(2, name='frequency')(feature)
           
@@ -123,7 +123,7 @@ def deepJPRESS(dims, echoes=32, points=2048, dilation_depth=8,
           #outputs of individual FIDs, total FIDs
           x = tf.reshape(x,(-1,echoes, points, dims))
           target_total_signal = L.Dense(2, name='target_total_signal')(x)
-          target_individual_signal = L.Dense(num_FIDs*2, name='target_individual_signal')(x)
+          target_individual_signal = L.Dense(num_fids*2, name='target_individual_signals')(x)
           x = tf.reduce_mean(x, axis=1)
   
           model = tf.keras.Model(inputs=input, outputs= [target_total_signal, target_individual_signal, frequency, phase, concentration])
