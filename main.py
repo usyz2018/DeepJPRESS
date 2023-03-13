@@ -21,9 +21,9 @@ LEARNING_RATE=5e-4
 #
 # For training the input is a tuple ({'input FID':total_signal}, target). The target here is a dictionary {'concentration':concentrations, 'target_individual_signal':
 # individual_signals, 'target_tatal_signal': total_signal}. Different from that in input FID, the target total signal is free of noise and extranious peaks to compute
-# losses. All the item values in the dictionaries are tf.float32 tensors and have the unbatched formats: (32, 2048, 2), (NUM_TARGET_CONCS), (32, 2048, NUM_TARGET_FIDS*2), (32, 2048, 2), respectively.
-# For inference the input is {'input FID':total_signal}. The keys in the target dictionary need to match the output names in the model. Using tf Dataloader
-# to batch and load input data so that the final input FID has the format (BATCH_SIZE, 32, 2048, 2).
+# losses. All the item values in the dictionaries are tf.float32 tensors and have the unbatched formats: (32, 2048, 2), (NUM_TARGET_CONCS),
+# (32, 2048, NUM_TARGET_FIDS*2), (32, 2048, 2), respectively. For inference the input is {'input FID':total_signal}. The keys in the target dictionary need to match 
+# the output names in the model. Using tf Dataloader to batch and load input data so that the final input FID has the format (BATCH_SIZE, 32, 2048, 2).
 
 
 print("REPLICAS: ", strategy.num_replicas_in_sync)
