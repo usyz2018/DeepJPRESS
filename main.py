@@ -176,8 +176,8 @@ def make_model(dims=128):
           return tf.reduce_sum(sig_loss_replica(y_true, y_pred))/REPLICA_BATCH_SIZE
 
         def individual_signal_loss(y_true, y_pred):
-          weight = tf.constant(2*[0.1]  +  2*(NUM_TARGET_FID-1)*[1.0]) # residual water loss is scaled by 0.1 
-          weight = tf.reshape(weight, (1,1,1,NUM_TARGET_FID*2))
+          weight = tf.constant(2*[0.1]  +  2*(NUM_TARGET_FIDS-1)*[1.0]) # residual water loss is scaled by 0.1 
+          weight = tf.reshape(weight, (1,1,1,NUM_TARGET_FIDS*2))
           y_true  = y_true*weight
           y_pred = y_pred*weight
           y_true = tf.reshape(y_true, (y_true.shape[0], -1))
@@ -194,7 +194,7 @@ def make_model(dims=128):
           return tf.reduce_sum(phase_loss_replica(y_true, y_pred))/REPLICA_BATCH_SIZE
 
         def conc_loss(y_true, y_pred): 
-          weight = tf.constant([0.05] + (NUM_TARGET_CONC-1)*[1.0]) # residual water loss is scaled by 0.05 
+          weight = tf.constant([0.05] + (NUM_TARGET_CONCS-1)*[1.0]) # residual water loss is scaled by 0.05 
           weight = tf.reshape(weight, (1,-1))
           y_true = weight*y_true
           y_pred = weight*y_pred
