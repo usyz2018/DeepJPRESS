@@ -4,7 +4,7 @@ from tensorflow.keras import backend as K
 
 NUM_TARGET_FIDS=13
 NUM_TARGET_CONCS=12
-NUM_TRAIN_SAMPLES=100000
+NUM_TRAIN_SAMPLES=100,000
 BATCH_SIZE=16
 NUM_EPOCHS=15
 LEARNING_RATE=5e-4
@@ -12,18 +12,19 @@ LEARNING_RATE=5e-4
 # The number of target FIDs is 13. They are: Water, tNAA, Cr, Cr_CH2, Cho, mI, Glu, Gln, GSH, GABA, Asp, Tau, and Lac. The target concetration for Cr_CH2 is dropped
 # due to the influence of water suppression RF pulses, so the number of concentration targets is 12.
 #
-# Default distribution strategy in Tensorflow (works on single GPU, for example, Nvidia A100 or A6000) is:
+# Default distribution strategy in Tensorflow which works on single GPU, for example, Nvidia A100 or A6000 is:
 #    strategy = tf.distribute.get_strategy()
 # if TPU, use the following code to creat a distributed strategy on a tpu:
 #    tf.config.experimental_connect_to_cluster(tpu)
 #    tf.tpu.experimental.initialize_tpu_system(tpu)
 #    strategy = tf.distribute.experimental.TPUStrategy(tpu)
 #
-# For training the input is a tuple ({'input FID':total_signal}, target). The target here is a dictionary {'concentration':concentrations, 'target_individual_signal':
-# individual_signals, 'target_tatal_signal': total_signal}. Different from that in input FID, the target total signal is free of noise and extranious peaks which is
-# used to compute total FID loss. All the item values in the dictionaries are tf.float32 tensors and have the unbatched formats: (32, 2048, 2), (NUM_TARGET_CONCS),
-# (32, 2048, NUM_TARGET_FIDS*2), (32, 2048, 2), respectively. For inference the input is {'input FID':total_signal}. The keys in the target dictionary need to match 
-# the output names specified in the model. Use tf Dataloader to batch and load input data. The final input FID has the format (BATCH_SIZE, 32, 2048, 2).
+# For training the input is a tuple ({'FID input':total_signal}, target). The target here is a dictionary {'concentrations':concentrations, 'target_individual_signals':
+# individual_signals, 'target_tatal_signal': total_signal, 'phase':phase, 'frequency':frequency}. Different from that in FID input, the target total signal is free of
+# noise and extranious peaks to be used to compute total FID loss (which can be disabled by set the loss-weight = 0. All the item values in the dictionaries are 
+# tf.float32 tensors and have the unbatched formats:(32, 2048, 2), (NUM_TARGET_CONCS), (32, 2048, NUM_TARGET_FIDS*2), (32, 2048, 2), (), (2), respectively. To perform
+# inference, the input is {'FID input':total_signal}. The keys in the target dictionary need to match the output names specified in the model. Use tf Dataset to 
+# prepare data and tf Dataloader to batch and load data. The final FID input has the format (BATCH_SIZE, 32, 2048, 2).
 
 
 print("REPLICAS: ", strategy.num_replicas_in_sync)
@@ -55,7 +56,7 @@ def wavenet(x, filters, dilations, kernel_size=5):
 def deepJPRESS(dims, echoes=32, points=2048, dilation_depth=8,
                num_concentrations=NUM_TARGET_CONCS, num_fids=NUM_TARGET_FIDS):
   
-          input = L.Input(shape=(echoes, points, 2), name='input FID')
+          input = L.Input(shape=(echoes, points, 2), name='FID input')
           x = tf.reshape(input, (-1,points,2))
 
           #encoder block1 
@@ -105,7 +106,7 @@ def deepJPRESS(dims, echoes=32, points=2048, dilation_depth=8,
 
           #outputs of concentration, phase, and frequency
           feature = L.GlobalAveragePooling1D()(x)     
-          concentration = L.Dense(num_concentrations, name='concentrations')(feature)  
+          concentrations = L.Dense(num_concentrations, name='concentrations')(feature)  
           phase = L.Dense(2, name='phase')(feature)
           frequency = L.Dense(2, name='frequency')(feature)
           
@@ -123,10 +124,10 @@ def deepJPRESS(dims, echoes=32, points=2048, dilation_depth=8,
           #outputs of individual FIDs, total FIDs
           x = tf.reshape(x,(-1,echoes, points, dims))
           target_total_signal = L.Dense(2, name='target_total_signal')(x)
-          target_individual_signal = L.Dense(num_fids*2, name='target_individual_signals')(x)
+          target_individual_signals = L.Dense(num_fids*2, name='target_individual_signals')(x)
           x = tf.reduce_mean(x, axis=1)
   
-          model = tf.keras.Model(inputs=input, outputs= [target_total_signal, target_individual_signal, frequency, phase, concentration])
+          model = tf.keras.Model(inputs=input, outputs= [target_total_signal, target_individual_signals, frequency, phase, concentrations])
 
           return model
 
