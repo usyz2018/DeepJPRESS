@@ -12,7 +12,7 @@ LEARNING_RATE=5e-4
 # The number of target FIDs is 13. They are: Water, tNAA, Cr, Cr_CH2, Cho, mI, Glu, Gln, GSH, GABA, Asp, Tau, and Lac. The target concetration for Cr_CH2 is dropped
 # due to the influence of water suppression RF pulses, so the number of concentration targets is 12.
 #
-# Default distribution strategy in Tensorflow which works on single GPU, for example, Nvidia A100 or A6000 is:
+# Default distribution strategy in Tensorflow which works on single GPU (for example, Nvidia A100 or A6000) is:
 #    strategy = tf.distribute.get_strategy()
 # if TPU, use the following code to creat a distributed strategy on a tpu:
 #    tf.config.experimental_connect_to_cluster(tpu)
