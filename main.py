@@ -9,19 +9,16 @@ BATCH_SIZE=16
 NUM_EPOCHS=15
 LEARNING_RATE=5e-4
 
-# The number of target FIDs is 13. They are: Water, tNAA, Cr, Cr_CH2, Cho, mI, Glu, Gln, GSH, GABA, Asp, Tau, and Lac. The target concetration for Cr_CH2 is dropped
-# due to the influence of water suppression RF pulses, so the number of concentration targets is 12, but Cr_CH2 is one of the FID targets.
-#
-# Default distribution strategy in Tensorflow which works on single GPU (for example, Nvidia A100 or A6000) is:
+# Default distribution strategy for single GPU is:
 #    strategy = tf.distribute.get_strategy()
 # if TPU, use the following code to creat a distributed strategy on a tpu:
 #    tf.config.experimental_connect_to_cluster(tpu)
 #    tf.tpu.experimental.initialize_tpu_system(tpu)
 #    strategy = tf.distribute.experimental.TPUStrategy(tpu)
 #
-# For training, the input is a tuple ({'FID input':total_signal}, target). The target here is a dictionary {'concentrations':concentrations, 'target_individual_signals':
+# The input for training is a tuple ({'FID input':total_signal}, target). The target here is a dictionary {'concentrations':concentrations, 'target_individual_signals':
 # individual_signals, 'target_tatal_signal': total_signal, 'phase':phase, 'frequency':frequency}. Different from that in FID input, the target total signal is free of
-# noise and extranious peaks in order to compute total FID loss (which can be disabled by setting the loss-weight = 0). All item values in the dictionaries are 
+# noise and extranious peaks in order to compute total FID loss (which can be disabled by setting the loss_weight = 0). All item values in the dictionaries are 
 # tf.float32 tensors and have the unbatched formats:(32, 2048, 2), (NUM_TARGET_CONCS), (32, 2048, NUM_TARGET_FIDS*2), (32, 2048, 2), (2), (2), respectively. The phase
 # means (cos(angle), sin(angle)). The two values in the frequncy are the frequency offsets of water and metabolites, respectively. Performing inference only needs the
 # input {'FID input': total_signal}. The key names in the target dictionary need to match the output names specified in the model. Use tf Dataset to prepare data and
