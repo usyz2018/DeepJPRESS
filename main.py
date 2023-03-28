@@ -18,9 +18,9 @@ LEARNING_RATE=5e-4
 #
 # The input for training is a tuple ({'FID input':total_signal}, target). The target here is a dictionary {'concentrations':concentrations, 'target_individual_signals':
 # individual_signals, 'target_tatal_signal': total_signal, 'phase':phase, 'frequency':frequency}. Different from that in FID input, the target total signal is free of
-# noise and extranious peaks in order to compute total FID loss (which can be disabled by setting the loss_weight = 0). All item values in the dictionaries are 
+# noise and extraneous peaks in order to compute total FID loss (which can be disabled by setting the loss_weight = 0). All item values in the dictionaries are 
 # tf.float32 tensors and have the unbatched formats:(32, 2048, 2), (NUM_TARGET_CONCS), (32, 2048, NUM_TARGET_FIDS*2), (32, 2048, 2), (2), (2), respectively. The phase
-# means (cos(angle), sin(angle)). The two values in the frequncy are the frequency offsets of water and metabolites, respectively. Performing inference only needs the
+# means (cos(angle), sin(angle)). The two values in the frequency are the frequency offsets of water and metabolites, respectively. Performing inference only needs the
 # input {'FID input': total_signal}. The key names in the target dictionary need to match the output names specified in the model. Use tf Dataset to prepare data and
 # tf Dataloader to batch and load data. The final FID input has the format (BATCH_SIZE, 32, 2048, 2).
 
@@ -175,7 +175,7 @@ def make_model(dims=128):
           return tf.reduce_sum(sig_loss_replica(y_true, y_pred))/REPLICA_BATCH_SIZE
 
         def individual_signal_loss(y_true, y_pred):
-          weight = tf.constant(2*[0.1]  +  2*(NUM_TARGET_FIDS-1)*[1.0]) # residual water loss is scaled by 0.1 
+          weight = tf.constant(2*[0.1]  +  2*(NUM_TARGET_FIDS-1)*[1.0])
           weight = tf.reshape(weight, (1,1,1,NUM_TARGET_FIDS*2))
           y_true  = y_true*weight
           y_pred = y_pred*weight
@@ -193,7 +193,7 @@ def make_model(dims=128):
           return tf.reduce_sum(phase_loss_replica(y_true, y_pred))/REPLICA_BATCH_SIZE
 
         def conc_loss(y_true, y_pred): 
-          weight = tf.constant([0.05] + (NUM_TARGET_CONCS-1)*[1.0]) # residual water loss is scaled by 0.05 
+          weight = tf.constant([0.05] + (NUM_TARGET_CONCS-1)*[1.0])
           weight = tf.reshape(weight, (1,-1))
           y_true = weight*y_true
           y_pred = weight*y_pred
