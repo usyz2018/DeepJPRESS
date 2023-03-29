@@ -119,7 +119,7 @@ def deepJPRESS(dims, echoes=32, points=2048, dilation_depth=8,
           x = L.LayerNormalization(axis=-1)(x)
           x = L.Activation('relu')(x)
           
-          #outputs of individual FIDs, total FIDs
+          #outputs of individual FIDs and total FID
           x = tf.reshape(x,(-1,echoes, points, dims))
           target_total_signal = L.Dense(2, name='target_total_signal')(x)
           target_individual_signals = L.Dense(NUM_TARGET_FIDS*2, name='target_individual_signals')(x)
